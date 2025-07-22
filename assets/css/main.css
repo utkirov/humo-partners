@@ -1,0 +1,56 @@
+
+.page-enter-from,
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(5px);
+}
+/* assets/css/main.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    @apply bg-main-bg text-primary-text;
+    font-family: 'Mulish', sans-serif;
+}
+
+
+.page-enter-active,
+.page-leave-active {
+    transition: all 0.2s ease-in-out;
+}
+
+/*
+ * ===================================================================
+ * == Кастомизация темы PrimeVue Aura для соответствия дизайну ==
+ * ===================================================================
+*/
+:root {
+    /* корпоративные цвета */
+    --orange: #F26241;
+    --light-bg: #F3F4F9;
+    --dark-text: #2D3748;
+
+    /* Переопределяем Основной (Primary) цвет */
+    --p-primary-color: var(--orange);
+    --p-primary-color-text: #FFFFFF;
+    --p-primary-hover-background: #E05A3A; /* Чуть темнее при наведении */
+
+    /* Переопределяем цвет рамки при фокусе */
+    --p-focus-ring-color: #f26241a3;
+    --p-focus-ring-width: 2px;
+
+    /* Переопределяем стили для полей ввода (Input) */
+    --p-input-text-background: var(--light-bg);
+    --p-input-text-border-color: transparent;
+    --p-input-text-color: var(--dark-text);
+    --p-input-text-hover-border-color: transparent;
+
+    /* Переопределяем стили для FloatLabel */
+    --p-float-label-color: #A0AEC0; /* Цвет лейбла в неактивном состоянии */
+    --p-float-label-focus-color: #A0AEC0; /* Цвет лейбла в активном состоянии */
+
+    /* Скругляем углы всех компонентов */
+    --p-border-radius: 0.75rem; /* 12px */
+}
