@@ -1,96 +1,66 @@
 <template>
-  <div class="max-w-md">
-    <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm">
-      <h2 class="text-xl font-bold text-primary-text dark:text-white mb-6">Добавить источник</h2>
-
-      <div v-if="pendingTypes" class="text-center text-secondary-text">Загрузка типов...</div>
-
-      <div v-else-if="typesError" class="text-center text-red-500">Не удалось загрузить типы источников.</div>
-
-      <form v-else @submit.prevent="onSubmit" class="space-y-6">
-
-        <FormSelect
-            name="type_id"
-            label="Выберите тип продвижения"
-            :options="sourceTypesOptions"
-        />
-
-        <FormInput
-            name="url"
-            label="Введите ссылку на вашу платформу"
-            placeholder="https://t.me/example"
-            icon-name="ph:link"
-        />
-
-        <FormInput
-            name="description"
-            label="Описание промокода"
-            placeholder="Промокод на скидку 15%"
-            icon-name="ph:pencil-line"
-        />
-
-        <div class="pt-2">
-          <button :disabled="isLoading" type="submit" class="w-full bg-accent-orange text-white font-bold py-3 px-4 rounded-xl shadow-md disabled:opacity-50">
-            <span v-if="isLoading">Отправка...</span>
-            <span v-else>Оставить заявку</span>
-          </button>
-        </div>
-      </form>
-    </div>
+  <div>
+    <h1 class="text-3xl font-bold mb-6">Добавить новый источник</h1>
+    <form @submit.prevent="handleSubmit" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm max-w-lg space-y-4">
+      <div>
+        <label for="source-type">Тип источника</label>
+        <select v-model="form.type_id" id="source-type" required class="w-full mt-1 p-2 border rounded-md dark:bg-gray-700">
+          <option disabled value="">Выберите тип</option>
+          <option v-for="type in sourceTypes" :key="type.id" :value="type.id">
+            {{ type.name }}
+          </option>
+        </select>
+      </div>
+      <div>
+        <label for="source-url">URL</label>
+        <input v-model="form.url" type="url" id="source-url" placeholder="https://example.com" required class="w-full mt-1 p-2 border rounded-md dark:bg-gray-700" />
+      </div>
+      <div>
+        <label for="source-desc">Описание</label>
+        <textarea v-model="form.description" id="source-desc" rows="4" required class="w-full mt-1 p-2 border rounded-md dark:bg-gray-700"></textarea>
+      </div>
+      <button type="submit" :disabled="isSubmitting" class="w-full bg-accent-orange text-white font-bold py-3 rounded-lg disabled:opacity-50">
+        {{ isSubmitting ? 'Отправка...' : 'Отправить на модерацию' }}
+      </button>
+    </form>
   </div>
 </template>
 
 <script setup>
-import { object, string, number } from 'yup';
-useHead({ title: 'Добавить источник | Humo TV Partners' });
+import { reactive, onMounted, ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useSourceStore } from '~/store/source';
 
+const router = useRouter();
 const toast = useToast();
-const isLoading = ref(false);
+const sourceStore = useSourceStore();
 
-// --- 1. Загрузка типов источников для селекта ---
-const { data: sourceTypes, pending: pendingTypes, error: typesError } = useAsyncData(
-    'sourceTypes',
-    () => useApiFetch('/dashboard/sources/types')
-);
+const { sourceTypes } = storeToRefs(sourceStore);
+const { fetchSourceTypes, addSource } = sourceStore;
 
-// Преобразуем загруженные типы в формат для компонента FormSelect
-const sourceTypesOptions = computed(() => {
-  if (!sourceTypes.value?.data) return [];
-  return sourceTypes.value.data.map(type => ({
-    value: type.id,
-    label: type.name,
-  }));
+const form = reactive({
+  type_id: '',
+  url: '',
+  description: '',
 });
+const isSubmitting = ref(false);
 
-// --- 2. Логика отправки формы ---
-const { handleSubmit } = useForm({
-  validationSchema: object({
-    type_id: number().required('Тип обязателен'),
-    url: string().url('Введите корректную ссылку').required('Ссылка обязательна'),
-    description: string(),
-  })
-});
-
-const onSubmit = handleSubmit(async (values) => {
-  isLoading.value = true;
+async function handleSubmit() {
+  isSubmitting.value = true;
   try {
-    const queryParams = new URLSearchParams({
-      type_id: values.type_id,
-      url: values.url,
-      description: values.description || '',
-    });
-
-    await useApiFetch(`/dashboard/sources/add?${queryParams.toString()}`, {
-      method: 'POST',
-    });
-
-    toast.success({title: 'Успех!', message: 'Ваша заявка на добавление источника отправлена.'});
-    await navigateTo('/sources/requests'); // Переходим на страницу заявок
-
+    await addSource(form);
+    toast.success({ title: 'Успех', message: 'Ваша заявка отправлена на рассмотрение.' });
+    router.push('/sources/requests');
   } catch (error) {
-    useApiError(error, toast);
+    toast.error({ title: 'Ошибка', message: 'Не удалось отправить заявку.' });
   } finally {
-    isLoading.value = false;
+    isSubmitting.value = false;
+  }
+}
+
+onMounted(() => {
+  if (sourceTypes.value.length === 0) {
+    fetchSourceTypes();
   }
 });
 </script>

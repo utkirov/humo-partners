@@ -13,6 +13,7 @@ export default defineNuxtConfig({
       'nuxt-toast',
       '@nuxtjs/color-mode',
       '@vueuse/nuxt',
+      '@pinia/nuxt',
     ],
     toast: {
         position: 'topRight',
