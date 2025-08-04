@@ -44,7 +44,9 @@ const form = reactive({
   description: '',
 });
 const isSubmitting = ref(false);
-
+useHead({
+  title: 'Добавить источник | Humo TV Partners',
+});
 async function handleSubmit() {
   isSubmitting.value = true;
   try {

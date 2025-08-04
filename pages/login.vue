@@ -35,6 +35,7 @@
 
 <script setup>
 import { object, string } from 'yup';
+
 definePageMeta({ layout: 'auth' });
 useHead({ title: 'Авторизация | Humo TV Partners' });
 
@@ -50,6 +51,7 @@ const { handleSubmit } = useForm({
 });
 
 const handleError = (errorData) => {
+  // Эта функция остается без изменений, она корректно обрабатывает ошибки
   let errorMessage = 'Произошла непредвиденная ошибка.';
   const errorCode = errorData?.code;
 
@@ -74,6 +76,7 @@ const onSubmit = handleSubmit(
     async (values) => {
       isLoading.value = true;
       try {
+        // ✅ Эта логика УЖЕ соответствует вашему API в Postman
         const queryParams = new URLSearchParams({
           phone: values.phone.replace(/\D/g, ''),
           password: values.password
@@ -81,7 +84,7 @@ const onSubmit = handleSubmit(
 
         const data = await $fetch(`/auth/login?${queryParams.toString()}`, {
           baseURL: config.public.apiBase,
-          method: 'POST',
+          method: 'POST', // Метод POST, как в Postman
         });
 
         if (data.data && data.data.token) {

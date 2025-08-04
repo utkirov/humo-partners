@@ -5,7 +5,7 @@
     <TheSidebar :is-open="isSidebarOpen" @close="isSidebarOpen = false" />
 
     <div class="flex-1 flex flex-col min-w-0 relative overflow-x-hidden">
-      <button @click="isSidebarOpen = true" class="absolute top-4 left-4 z-20 p-2 lg:hidden">
+      <button @click="isSidebarOpen = true" class="absolute top-6 left-4 z-20 p-2 lg:hidden">
         <Icon name="ph:list" class="h-6 w-6" />
       </button>
 

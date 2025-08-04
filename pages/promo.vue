@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-primary-text dark:text-white mb-8">Промо материалы</h1>
+    <h1 class="sm:ml-8 lg:ml-0 text-3xl font-bold text-primary-text dark:text-white mb-8">Промо материалы</h1>
 
     <AppTabs :tabs="promoTabs" />
 

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-primary-text dark:text-white mb-8">Часто задаваемые вопросы (FAQ)</h1>
+    <h1 class="sm:ml-8 lg:ml-0 text-4xl font-bold text-primary-text dark:text-white mb-10">Часто задаваемые вопросы (FAQ)</h1>
 
     <div v-if="isLoading && faqs.length === 0" class="text-center py-10">
       <p>Загрузка вопросов...</p>
@@ -24,16 +24,16 @@
 </template>
 
 <script setup>
-import {onMounted} from 'vue';
-import {storeToRefs} from 'pinia';
-import {useFaqStore} from '~/store/faq';
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useFaqStore } from '~/store/faq';
 import FaqItem from '~/components/faq/FaqItem.vue';
 
-useHead({title: 'FAQ | Humo TV Partners'});
+useHead({ title: 'FAQ | Humo TV Partners' });
 
-const faqStore = useFaqStore(); 
-const {faqs, isLoading, hasMore} = storeToRefs(faqStore);
-const {fetchFaqs} = faqStore;
+const faqStore = useFaqStore();
+const { faqs, isLoading, hasMore } = storeToRefs(faqStore);
+const { fetchFaqs } = faqStore;
 
 onMounted(() => {
   if (faqs.value.length === 0) {

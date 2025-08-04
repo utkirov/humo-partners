@@ -1,28 +1,24 @@
 <template>
   <div class="space-y-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
-      <h1 class="text-3xl font-bold text-primary-text dark:text-white">Main Dashboard</h1>
-      <div class="flex items-center gap-4">
-        <input type="text" placeholder="Search..." class="p-2 rounded-lg bg-white dark:bg-gray-800 border border-transparent focus:border-accent-orange outline-none">
-        <Icon name="ph:bell" class="h-6 w-6 text-secondary-text dark:text-gray-400" />
-      </div>
+      <h1 class="sm:ml-8 lg:ml-0 text-3xl font-bold text-primary-text dark:text-white">Главная</h1>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <StatCard v-for="card in statCards" :key="card.title" v-bind="card" />
+      <StatCard v-for="card in statCards" :key="card.title" v-bind="card"/>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div class="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
         <h3 class="font-bold text-lg mb-4">Пользователи</h3>
         <div class="h-80">
-          <ChartsLineChart :chart-data="lineChartData" />
+          <ChartsLineChart :chart-data="lineChartData"/>
         </div>
       </div>
       <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
         <h3 class="font-bold text-lg mb-4">Пользователи</h3>
         <div class="h-80">
-          <ChartsDoughnutChart :chart-data="doughnutChartData" />
+          <ChartsDoughnutChart :chart-data="doughnutChartData"/>
         </div>
       </div>
     </div>
@@ -30,24 +26,69 @@
     <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm">
       <h3 class="font-bold text-lg mb-4">Общий доход</h3>
       <div class="h-80">
-        <ChartsLineChart :chart-data="incomeChartData" />
+        <ChartsLineChart :chart-data="incomeChartData"/>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useDashboardStore } from '~/store/dashboard';
+
 definePageMeta({layout: 'default'});
 useHead({title: 'Главная | Humo TV Partners'});
 
-// Данные для карточек статистики
-const statCards = ref([
-  {icon: 'ph:users', title: 'Зарегистрированные', value: '2500', percentage: 23, color: 'text-blue-500'},
-  {icon: 'ph:money', title: 'Общий доход', value: '4 500 000', percentage: -13, color: 'text-green-500'},
-  {icon: 'ph:arrow-fat-lines-up', title: 'Общие выплаты', value: '1 200 000', percentage: 23, color: 'text-orange-500'},
-]);
+// ✨ 1. Инициализируем хранилище Pinia
+const dashboardStore = useDashboardStore();
+const { stats, isLoading } = storeToRefs(dashboardStore);
+const { fetchDashboardStats } = dashboardStore;
 
-// Данные для первого линейного графика
+// ✨ 2. Создаем computed-свойство для трансформации данных из API в нужный формат
+const statCards = computed(() => {
+  if (isLoading.value) {
+    // Возвращаем "скелет" данных на время загрузки
+    return [
+      {icon: 'ph:users', title: 'Зарегистрированные', value: '...', percentage: 0, color: 'text-blue-500'},
+      {icon: 'ph:money', title: 'Общий доход', value: '...', percentage: 0, color: 'text-green-500'},
+      {icon: 'ph:arrow-fat-lines-up', title: 'Общие выплаты', value: '...', percentage: 0, color: 'text-orange-500'},
+    ];
+  }
+  return [
+    {
+      icon: 'ph:users',
+      title: 'Зарегистрированные',
+      value: stats.value.registers.toLocaleString('fr-FR'),
+      percentage: 23, // Эти данные пока статичны, т.к. API их не предоставляет
+      color: 'text-blue-500'
+    },
+    {
+      icon: 'ph:money',
+      title: 'Общий доход',
+      value: stats.value.total_income.toLocaleString('fr-FR'),
+      percentage: -13,
+      color: 'text-green-500'
+    },
+    {
+      icon: 'ph:arrow-fat-lines-up',
+      title: 'Общие выплаты',
+      value: stats.value.total_payout.toLocaleString('fr-FR'),
+      percentage: 26,
+      color: 'text-orange-500'
+    },
+  ];
+});
+
+
+// ✨ 3. Загружаем данные при монтировании страницы
+onMounted(() => {
+  fetchDashboardStats();
+});
+
+
+// --- Данные для графиков остаются статичными ---
+
 const lineChartData = ref({
   labels: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь'],
   datasets: [
@@ -68,7 +109,6 @@ const lineChartData = ref({
   ],
 });
 
-// Данные для круговой диаграммы
 const doughnutChartData = ref({
   labels: ['Активные пользователи', 'Неактивные'],
   datasets: [
@@ -79,7 +119,6 @@ const doughnutChartData = ref({
   ]
 });
 
-// Данные для графика доходов
 const incomeChartData = ref({
   labels: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь'],
   datasets: [

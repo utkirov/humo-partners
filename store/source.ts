@@ -1,58 +1,60 @@
 import { defineStore } from 'pinia';
 
-// Описываем типы данных для строгой типизации
-interface Source {
+interface Promocode {
     id: number;
-    url: string;
+    promocode: string;
     description: string;
-    // ... другие поля
+    days: number;
+    activations: number;
+    source: {
+        id: number;
+        name: string;
+    };
 }
 
-interface SourceType {
+// ✨ Новый интерфейс для заявок в ожидании
+interface PendingSource {
     id: number;
-    name: string;
-    // ... другие поля
+    status: string;
+    data: string; // Судя по API, это дата
 }
 
 interface SourceState {
-    activeSources: Source[];
-    pendingSources: Source[];
-    sourceTypes: SourceType[];
+    activePromocodes: Promocode[];
+    // ✨ Типизируем массив с заявками
+    pendingSources: PendingSource[];
+    sourceTypes: any[];
     isLoading: boolean;
 }
 
 export const useSourceStore = defineStore('source', {
-    // 1. СОСТОЯНИЕ (STATE): Хранит все данные, связанные с источниками
     state: (): SourceState => ({
-        activeSources: [],
+        activePromocodes: [],
         pendingSources: [],
         sourceTypes: [],
-        isLoading: false, // Единый флаг загрузки для простоты
+        isLoading: false,
     }),
 
-    // 2. ДЕЙСТВИЯ (ACTIONS): Функции для работы с API и изменения состояния
     actions: {
-        // Загрузка активных источников
-        async fetchActiveSources() {
+        async fetchActivePromocodes() {
             this.isLoading = true;
             try {
                 const response = await useApiFetch('/dashboard/sources/actives');
-                // Предполагается, что API возвращает { data: [...] }
-                this.activeSources = response.data || response;
+                this.activePromocodes = response.data || [];
             } catch (error) {
-                console.error("Ошибка при загрузке активных источников:", error);
-                this.activeSources = []; // В случае ошибки сбрасываем массив
+                console.error("Ошибка при загрузке промокодов:", error);
+                this.activePromocodes = [];
             } finally {
                 this.isLoading = false;
             }
         },
 
-        // Загрузка источников в ожидании
         async fetchPendingSources() {
             this.isLoading = true;
             try {
                 const response = await useApiFetch('/dashboard/sources/pending');
-                this.pendingSources = response.data || response;
+                // ✨ API возвращает массив напрямую в data
+                this.pendingSources = response.data || [];
             } catch (error) {
                 console.error("Ошибка при загрузке ожидающих источников:", error);
                 this.pendingSources = [];
@@ -61,7 +63,6 @@ export const useSourceStore = defineStore('source', {
             }
         },
 
-        // Загрузка типов источников (для формы добавления)
         async fetchSourceTypes() {
             this.isLoading = true;
             try {
@@ -75,9 +76,7 @@ export const useSourceStore = defineStore('source', {
             }
         },
 
-        // Добавление нового источника
         async addSource(payload: { type_id: number; url: string; description: string }) {
-            // Это действие возвращает промис, чтобы компонент мог обработать результат
             return useApiFetch('/dashboard/sources/add', {
                 method: 'POST',
                 body: payload,

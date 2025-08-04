@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="text-3xl font-bold text-primary-text mb-8">Источники</h1>
+    <h1 class="sm:ml-8 lg:ml-0 text-3xl font-bold text-primary-text mb-8">Источники</h1>
     <AppTabs :tabs="sourceTabs" />
     <NuxtPage />
   </div>

@@ -143,4 +143,8 @@ const clearFilters = () => {
 onMounted(() => {
   generateChartData();
 });
+
+useHead({
+  title: 'Статистика | Humo TV Partners',
+});
 </script>
